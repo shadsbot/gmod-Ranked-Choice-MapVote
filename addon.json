@@ -1,0 +1,14 @@
+{
+	"title"		:	"Ranked Choice Map Vote",
+	"type"		:	"tool",
+	"tags"		:	[""],
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*",
+		"*.git*",
+		"*.md*"
+		"*.hg*"		
+	]
+}
