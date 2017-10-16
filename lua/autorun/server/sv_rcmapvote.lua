@@ -21,6 +21,26 @@ if SERVER then
 		end
 	end )
 
+	-- Send the maplist for autocomplete and nomination reasons when they connect
+	-- May be deprecated, Shad: investigate this
+	hook.Add("PlayerInitialSpawn", "playerconnectedbroadcastmaps", function(ply)
+		net.Start("RCMVreqmaps")
+		local ml = ""
+		if (GetConVar("rcmv_whitelist"):GetInt() == 0) then
+			local scanlist = file.Find("maps/ttt_*.bsp", "GAME")
+			-- Remove file extensions before final list is sent
+			for _,i in ipairs(scanlist) do
+				scanlist[_] = string.gsub(i,".bsp","")
+				ml = scanlist[_] .. " " .. ml
+			end
+		else
+			ml = file.Read("rcmapvote/maplist.txt")
+		end
+		net.WriteString(ml)
+		net.Send(ply)
+	end)
+
+
 	function BeginMapChange(v,w)
 		print("BeginMapChange() Started")
 		nextlevel = rcvote(v,w)
@@ -49,6 +69,7 @@ if SERVER then
 	print("\nSV_RCMAPVOTE LOADED IN! O7")
 	
 	local castVotes = {}
+	local nominatedMaps = {}
 
 	-- Send the client the maplist
 	function startVoting()
@@ -63,15 +84,6 @@ if SERVER then
 				end
 			return t
 		end
-
-
-		-- Send the maplist for autocomplete and nomination reasons when they connect
-		-- May be deprecated, Shad: investigate this
-		hook.Add("PlayerInitialSpawn", "playerconnectedbroadcastmaps", function(ply)
-			net.Start("RCMVreqmaps")
-			net.WriteString(contents)
-			net.Send(ply)
-		end)
 
 		local maps = {}
 		local nominate = {}
@@ -113,12 +125,42 @@ if SERVER then
 
 		local toClient = whitelist[1] .. " " .. whitelist[2] .. " " .. whitelist[3]
 
-		-- Add the nominated maps
-		for i=1,#nominate do
-			if i < 5 then
-				toClient = toClient .. " " .. nominate[i]
+		-- Check nominated maps if they actually exist and for duplicates
+		local approvedNominations = {}
+		local function validMap(m,maplist)
+			for _,v in ipairs(maplist) do
+				if m == v then return true end
+			end
+			return false
+		end
+		local function duplicateMap(m,maplist)
+			for _,v in ipairs(maplist) do 
+				if m== v then return true end
+			end
+			return false
+		end
+
+		for _,m in ipairs(nominatedMaps) do
+			if validMap(m,whitelist) then
+				if not duplicateMap(m,approvedNominations) then
+					if not (m == whitelist[1]) then
+						if not (m == whitelist[2]) then
+							if not (m == whitelist[3]) then
+								table.insert(approvedNominations,m)
+							end
+						end
+					end
+				end
 			end
 		end
+
+		-- Add the nominated maps
+		for i=1,#approvedNominations do
+			if i < 5 then
+				toClient = toClient .. " " .. approvedNominations[i]
+			end
+		end
+
 		net.Start("RCMVmaplist")
 		net.WriteString(toClient)
 		net.Broadcast()
@@ -197,10 +239,10 @@ if SERVER then
 			else
 				if text == "!nominate list" then
 					timer.Create("respondNominateChatList", (1/30), 1, function()
-						if #nominate > 1 then
+						if #nominatedMaps > 1 then
 								ply:PrintMessage(HUD_PRINTTALK,"Nominated maps:")
-							for i=1,#nominate do
-								ply:PrintMessage(HUD_PRINTTALK,nominate[i])
+							for i=1,#nominatedMaps do
+								ply:PrintMessage(HUD_PRINTTALK,nominatedMaps[i])
 							end
 						else
 							ply:PrintMessage(HUD_PRINTTALK,"No maps have been nominated yet! Why not add one?")
@@ -219,39 +261,11 @@ if SERVER then
 						end
 						return false
 					end
-					-- We don't want it to be something that is already going to be sent out
-					local function denyNomination(map,player)
-						timer.Create("denyNominationTimer", (1/30), 1, function()
-							player:PrintMessage(HUD_PRINTTALK, map .. " is already on the list!")
-						end)
-					end
-					if text == whitelist[1] then
-						denyNomination(text,ply)
-					elseif text == whitelist[2] then
-						denyNomination(text,ply)
-					elseif text == whitelist[3] then
-						denyNomination(text,ply)
-					else
-						if (contains(whitelist,text)) then
-							if not contains(nominate, text) then
-								table.insert(nominate,text)
-								dbg("Made it this far: Nominate edition")
-								net.Start("RCMVchat")
-								local message = {}
-								message.Type = "success"
-								message.Nick = ply:Nick()
-								message.Text = text
-								net.WriteTable(message)
-								net.Broadcast()
-							else
-								-- They nominated a correct map, but it's already been added!
-								denyNomination(text,ply)
-							end
-						else
-							timer.Create("thisNoMapTimer", (1/30), 1, function() ply:PrintMessage(HUD_PRINTTALK, text .. " is not a map on this server.") end)
+					table.insert(nominatedMaps,text)
+					timer.Create("thisNoMapTimer", (1/30), 1, function() 
+							ply:PrintMessage(HUD_PRINTTALK, text .. " has been added to the nomination queue for processing.")
+							end)
 						end
-					end
-				end
 			end
 		end
 	end )
