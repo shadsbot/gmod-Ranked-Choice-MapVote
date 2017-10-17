@@ -1,14 +1,14 @@
 {
 	"title"		:	"Ranked Choice Map Vote",
 	"type"		:	"tool",
-	"tags"		:	[""],
+	"tags"		:	[ "realism", "fun" ], 
 	"ignore"	:
 	[
 		"*.psd",
 		"*.vcproj",
 		"*.svn*",
 		"*.git*",
-		"*.md*"
-		"*.hg*"		
+		"*.md*",
+		"*.hg*"
 	]
 }
