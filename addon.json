@@ -9,6 +9,9 @@
 		"*.svn*",
 		"*.git*",
 		"*.md*",
-		"*.hg*"
+		"*.hg*",
+		"LICENSE",
+		"README.md"
+		
 	]
 }
