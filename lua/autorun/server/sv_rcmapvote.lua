@@ -10,83 +10,32 @@ include("sv_init.lua")
 include("sv_rcvote.lua")
 
 if SERVER then
-	-- Load settings
-	cvars.RemoveChangeCallback("rcmv_whitelist")
-	cvars.AddChangeCallback("rcmv_whitelist", function( convar_name, oldv, newv ) 
-		if (oldv == '1') then 
-			print("Maplist will be loaded from maps/ttt_*.bsp and use data/rcmapvote/maplist.txt as a blacklist.") 
-		else 
-			newv = '0' -- If it ain't 1 it's 0
-			print("Maplist will be loaded from data/rcmapvote/maplist.txt") 
-		end
-	end )
-
-	-- Send the maplist for autocomplete and nomination reasons when they connect
-	-- May be deprecated, Shad: investigate this
-	hook.Add("PlayerInitialSpawn", "playerconnectedbroadcastmaps", function(ply)
-		net.Start("RCMVreqmaps")
-		local ml = ""
-		if (GetConVar("rcmv_whitelist"):GetInt() == 0) then
-			local scanlist = file.Find("maps/ttt_*.bsp", "GAME")
-			-- Remove file extensions before final list is sent
-			for _,i in ipairs(scanlist) do
-				scanlist[_] = string.gsub(i,".bsp","")
-				ml = scanlist[_] .. " " .. ml
-			end
-		else
-			ml = file.Read("rcmapvote/maplist.txt")
-		end
-		net.WriteString(ml)
-		net.Send(ply)
-	end)
-
-
-	function BeginMapChange(v,w)
-		print("BeginMapChange() Started")
-		nextlevel = rcvote(v,w)
-		-- Attempting to unsuccessfully
-		nextmap = nextlevel
-		mapname = nextmap
-		-- Neat, that didn't work, so let's do this instead!
-		file.Write("rcmapvote/nextmap.txt",nextmap)
-		print("Switching to " .. nextlevel)
-		-- We have a winner, tell everyone
-		net.Start("RCMVmapwinner")
-		net.WriteString(nextmap)
-		net.Broadcast()
-		--LANG.Msg("limit_round", {mapname = nextmap})
-		timer.Simple(15, game.LoadNextMap)
-		-- RunConsoleCommand("changelevel", newmap)
-	end
-	function CheckIfReadyChange(v,w)
-		allPlayers = player.GetAll()
-		if #v == #allPlayers then
-			print("CheckIfReadyChange() Started")
-			BeginMapChange(v,w)
+	function dbg(a) 
+		if (GetConVar("rcmv_debug"):GetInt() == 1) then
+			print(a)
 		end
 	end
-
-	print("\nSV_RCMAPVOTE LOADED IN! O7")
+	
+	dbg("\nSV_RCMAPVOTE LOADED IN! O7")
 	
 	local castVotes = {}
 	local nominatedMaps = {}
+	local approvedNominations = {}
+	local maps = {}
 
-	-- Send the client the maplist
-	function startVoting()
-		local contents = file.Read("rcmapvote/maplist.txt")
-		-- Scramble
-		local function shuffle(t)
-			local n = #t -- gets the length of the table
-			while n > 2 do -- only run if the table has more than 1 element
-				local k = math.random(n) -- get a random number
-				t[n], t[k] = t[k], t[n]
-				n = n - 1
-				end
-			return t
+	-- If variable is in table
+	local function contains(table, val)
+		for i=1,#table do
+			if table[i] == val then
+				return true
+			end
 		end
-
-		local maps = {}
-		local nominate = {}
+		return false
+	end
+	
+	function updateMaps()
+		maps = {}
+		local contents = file.Read("rcmapvote/maplist.txt")
 		if (GetConVar("rcmv_whitelist"):GetInt() == 1) then
 			for map in contents:gmatch("%S+") do table.insert(maps, map) end
 		else
@@ -111,6 +60,95 @@ if SERVER then
 				table.remove(maps,i)
 			end
 		end
+	end
+
+	updateMaps()
+	function sendAutofillMaps()
+		local tmp = ""
+		for _,m in ipairs(maps) do
+			tmp = m .. " " .. tmp
+		end
+		net.Start("RCMVreqmaps")
+		net.WriteString(tmp)
+		net.Broadcast()
+	end
+
+	-- Load settings
+	cvars.RemoveChangeCallback("rcmv_whitelist")
+	cvars.AddChangeCallback("rcmv_whitelist", function( convar_name, oldv, newv ) 
+		if (oldv == '1') then 
+			print("Maplist will be loaded from maps/ttt_*.bsp and use data/rcmapvote/maplist.txt as a blacklist.") 
+		else 
+			newv = '0' -- If it ain't 1 it's 0
+			print("Maplist will be loaded from data/rcmapvote/maplist.txt") 
+		end
+		for k in pairs(approvedNominations) do approvedNominations[k] = nil end
+		updateMaps()
+		sendAutofillMaps()
+	end )
+
+	-- Send the maplist for autocomplete and nomination reasons when they connect
+	-- May be deprecated, Shad: investigate this
+	hook.Add("PlayerInitialSpawn", "playerconnectedbroadcastmaps", function(ply)
+		net.Start("RCMVreqmaps")
+		local ml = ""
+		if (GetConVar("rcmv_whitelist"):GetInt() == 0) then
+			local scanlist = file.Find("maps/ttt_*.bsp", "GAME")
+			-- Remove file extensions before final list is sent
+			for _,i in ipairs(scanlist) do
+				scanlist[_] = string.gsub(i,".bsp","")
+				ml = scanlist[_] .. " " .. ml
+			end
+		else
+			ml = file.Read("rcmapvote/maplist.txt")
+		end
+		net.WriteString(ml)
+		net.Send(ply)
+	end)
+
+
+	function BeginMapChange(v,w)
+		dbg("BeginMapChange() Started")
+		nextlevel = rcvote(v,w)
+		-- Attempting to unsuccessfully
+		nextmap = nextlevel
+		mapname = nextmap
+		-- Neat, that didn't work, so let's do this instead!
+		file.Write("rcmapvote/nextmap.txt",nextmap)
+		dbg("Switching to " .. nextlevel)
+		-- We have a winner, tell everyone
+		net.Start("RCMVmapwinner")
+		net.WriteString(nextmap)
+		net.Broadcast()
+		--LANG.Msg("limit_round", {mapname = nextmap})
+		timer.Simple(15, game.LoadNextMap)
+		-- RunConsoleCommand("changelevel", newmap)
+	end
+	function CheckIfReadyChange(v,w)
+		allPlayers = player.GetAll()
+		if #v == #allPlayers then
+			dbg("CheckIfReadyChange() Started")
+			ServerLog("All votes submitted. Begin map change.")
+			BeginMapChange(v,w)
+		end
+	end
+	
+
+
+	-- Send the client the maplist
+	function startVoting()
+		updateMaps()
+		-- Scramble
+		local function shuffle(t)
+			local n = #t -- gets the length of the table
+			while n > 2 do -- only run if the table has more than 1 element
+				local k = math.random(n) -- get a random number
+				t[n], t[k] = t[k], t[n]
+				n = n - 1
+				end
+			return t
+		end
+		
 		local whitelist = maps
 		-- scramble the whitelist
 		whitelist = shuffle(whitelist)
@@ -123,36 +161,16 @@ if SERVER then
 		net.WriteString(mapString)
 		net.Broadcast()
 
-		local toClient = whitelist[1] .. " " .. whitelist[2] .. " " .. whitelist[3]
-
-		-- Check nominated maps if they actually exist and for duplicates
-		local approvedNominations = {}
-		local function validMap(m,maplist)
-			for _,v in ipairs(maplist) do
-				if m == v then return true end
-			end
-			return false
-		end
-		local function duplicateMap(m,maplist)
-			for _,v in ipairs(maplist) do 
-				if m== v then return true end
-			end
-			return false
-		end
-
-		for _,m in ipairs(nominatedMaps) do
-			if validMap(m,whitelist) then
-				if not duplicateMap(m,approvedNominations) then
-					if not (m == whitelist[1]) then
-						if not (m == whitelist[2]) then
-							if not (m == whitelist[3]) then
-								table.insert(approvedNominations,m)
-							end
-						end
-					end
+		local approvedWhitelist = {}
+		for _,m in ipairs(whitelist) do 
+			if (#approvedWhitelist < 3) then
+				if not contains(approvedNominations,m) then
+					table.insert(approvedWhitelist,m)
 				end
 			end
 		end
+		
+		local toClient = approvedWhitelist[1] .. " " .. approvedWhitelist[2] .. " " .. approvedWhitelist[3]
 
 		-- Add the nominated maps
 		for i=1,#approvedNominations do
@@ -160,7 +178,7 @@ if SERVER then
 				toClient = toClient .. " " .. approvedNominations[i]
 			end
 		end
-
+		ServerLog("Map voting has started with the following maps: " .. toClient)
 		net.Start("RCMVmaplist")
 		net.WriteString(toClient)
 		net.Broadcast()
@@ -181,7 +199,7 @@ if SERVER then
 		table.insert(castVotes,votes)	-- Insert it into the master table
 	end )
 	
-	print(GetGlobalInt("ttt_rounds_left") .. " rounds remaining")
+	dbg(GetGlobalInt("ttt_rounds_left") .. " rounds remaining")
 
 	-- Adapted from default TTT code and MapSwitch by Willox (github.com/willox/gmod-mapvote)
 	-- (CC0 1.0)
@@ -223,7 +241,7 @@ if SERVER then
 
 			startVoting()
 			else
-			ply:PrintMessage( HUD_PRINTCONSOLE, "Sorry! In order to do that, you have to be either an admin or a superadmin. Or have sv_cheats enabled." )
+			ply:PrintMessage( HUD_PRINTCONSOLE, "Sorry! In order to do that, you have to be either an admin or a superadmin, or have sv_cheats enabled." )
 		end
 	end
 	concommand.Add( "rcmv_forcevoting", forceVoting )
@@ -241,8 +259,8 @@ if SERVER then
 					timer.Create("respondNominateChatList", (1/30), 1, function()
 						if #nominatedMaps > 1 then
 								ply:PrintMessage(HUD_PRINTTALK,"Nominated maps:")
-							for i=1,#nominatedMaps do
-								ply:PrintMessage(HUD_PRINTTALK,nominatedMaps[i])
+							for i=1,#approvedNominations do
+								ply:PrintMessage(HUD_PRINTTALK,approvedNominations[i])
 							end
 						else
 							ply:PrintMessage(HUD_PRINTTALK,"No maps have been nominated yet! Why not add one?")
@@ -252,19 +270,48 @@ if SERVER then
 					-- remove "!nominate "
 					text = string.sub( text, 11 )
 					dbg(text)
-					-- If variable is in table
-					local function contains(table, val)
-						for i=1,#table do
-							if table[i] == val then
-								return true
-							end
+
+					-- Check nominated maps if they actually exist and for duplicates
+					local function validMap(m,maplist)
+						for _,v in ipairs(maplist) do
+							if m == v then return true end
+						end
+						return false
+					end
+					local function duplicateMap(m,maplist)
+						for _,v in ipairs(maplist) do 
+							if m== v then return true end
 						end
 						return false
 					end
 					table.insert(nominatedMaps,text)
-					timer.Create("thisNoMapTimer", (1/30), 1, function() 
-							ply:PrintMessage(HUD_PRINTTALK, text .. " has been added to the nomination queue for processing.")
-							end)
+
+					if not (#maps < 4) then	
+						if validMap(text,maps) then
+							if not duplicateMap(text,approvedNominations) then
+								if (#approvedNominations < 4) then
+									table.insert(approvedNominations,text)
+									net.Start("RCMVchat")
+									message = {}
+									message["Nick"] = ply:Nick()
+									message["Text"] = text
+									net.WriteTable(message)
+									net.Broadcast()
+								else
+									timer.Create("thisNoMapTimer", (1/30), 1, function() ply:PrintMessage(HUD_PRINTTALK, "All nomination slots are full! Sorry!") end)
+								end
+							else
+								timer.Create("thisNoMapTimer", (1/30), 1, function() ply:PrintMessage(HUD_PRINTTALK, "Duplicate map " .. text) end)
+							end
+						else
+							timer.Create("thisNoMapTimer", (1/30), 1, function() ply:PrintMessage(HUD_PRINTTALK, "Invalid map " .. text) end)
+						end
+					else 
+						timer.Create("thisNoMapTimer", (1/30), 1, function() ply:PrintMessage(HUD_PRINTTALK, "This server does not have enough maps for a nomination.") end)						
+					end
+					-- timer.Create("thisNoMapTimer", (1/30), 1, function() 
+					-- 		ply:PrintMessage(HUD_PRINTTALK, text .. " has been added to the nomination queue for processing.")
+					-- 		end)
 						end
 			end
 		end

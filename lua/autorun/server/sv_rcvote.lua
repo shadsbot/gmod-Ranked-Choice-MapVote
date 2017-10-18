@@ -106,7 +106,7 @@ function rcvote(votes, whitelist)
 		else
 			for k=1,#whitelist,1 do
 				if min[1] == whitelist[k] then
-					dbg("Striking: " .. whitelist[k])
+					ServerLog("Striking: " .. whitelist[k])
 					table.remove(whitelist,k)
 				end
 			end

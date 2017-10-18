@@ -1,10 +1,10 @@
 if CLIENT then
 	function dbg(a)
-		if true then
+		if (GetConVar("rcmv_debug"):GetInt() == 1) then
 			print(a)
 		end
 	end
-	print("CL_RCMAPVOTE LOADED IN O7!")
+	dbg("CL_RCMAPVOTE LOADED IN O7!")
 
 	-- Let's display a message
 	function rcmvMsg(a, time)
@@ -36,16 +36,16 @@ if CLIENT then
 
 	-- Nominate message received
 	net.Receive("RCMVchat", function() 
-		print("Made it this far: Nominate Edition: This time, It's Client")
+		dbg("Made it this far: Nominate Edition: This time, It's Client")
 		message = net.ReadTable()
 		timer.Create("delayedChatTimer", (1/30), 1, function()
 			chat.AddText(
 				-- Set Colour: Red, print nick
-				Color(255, 151, 11), message.Nick,
+				Color(78, 196, 255), message.Nick,
 				-- Set Colour: White, print text "has nominated"
 				Color(255,255,255), " has nominated ",
 				-- Set Colour: Blue, print map
-				Color(37, 37, 200), message.Text
+				Color(255,246,167), message.Text
 				)
 		end )
 	end )
@@ -53,7 +53,7 @@ if CLIENT then
 	-- Tick tock, we have a timer
 	net.Receive("RCMVtimer", function()
 		time = net.ReadInt(32)
-		print("RCMV: you have " .. time .. " seconds to get your vote in.")
+		dbg("RCMV: you have " .. time .. " seconds to get your vote in.")
 		timer.Create("TimerCountDownHUDTimer", 1, 0, function()
 			hook.Add( "HUDPaint", "HUDTimerCountDown", function()
 				draw.SimpleTextOutlined("Voting ends in " .. time .. " seconds.", "DermaDefault", ScrW() / 2, 50, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0,0,0,255))
@@ -76,7 +76,7 @@ if CLIENT then
 			
 			surface.PlaySound("buttons/button19.wav")
 			a = net.ReadString()
-			print(a)
+			dbg(a)
 			rcmvMsg("Next Map: " .. a,10) 
 			rcmvmapwinnerfired = true
 		end

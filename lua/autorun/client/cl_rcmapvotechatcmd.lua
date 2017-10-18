@@ -1,11 +1,17 @@
-print("RCMVChatCMD LOADED IN O7")
+function dbg(a) 
+	if (GetConVar("rcmv_debug"):GetInt() == 1) then
+		print(a)
+	end
+end
 
+dbg("RCMVChatCMD LOADED IN O7")
 
 maplist = {}
 -- Get the maplist
 net.Receive("RCMVreqmaps", function()
+	maplist = {}
 	maps = net.ReadString()
-	print(maps)
+	dbg(maps)
 	-- Ensure we haven't received the broadcast
 	if #maplist < 1 then
 		for map in maps:gmatch("%S+") do table.insert(maplist, map) end
