@@ -1,5 +1,5 @@
 function dbg(a) 
-	if (GetConVar("rcmv_debug"):GetInt() == 1) then
+	if (false) then
 		print(a)
 	end
 end
