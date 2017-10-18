@@ -170,7 +170,11 @@ if SERVER then
 			end
 		end
 		
-		local toClient = approvedWhitelist[1] .. " " .. approvedWhitelist[2] .. " " .. approvedWhitelist[3]
+		local toClient = ""
+		-- Add the approved maps
+		for i=1,#approvedWhitelist do
+				toClient = approvedWhitelist[i] .. " " .. toClient
+		end
 
 		-- Add the nominated maps
 		for i=1,#approvedNominations do
