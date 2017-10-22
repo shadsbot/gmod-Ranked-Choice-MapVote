@@ -125,7 +125,7 @@ if SERVER then
 		-- RunConsoleCommand("changelevel", newmap)
 	end
 	function CheckIfReadyChange(v,w)
-		allPlayers = player.GetAll()
+		allPlayers = player.GetHumans()
 		if #v == #allPlayers then
 			dbg("CheckIfReadyChange() Started")
 			ServerLog("All votes submitted. Begin map change.")
