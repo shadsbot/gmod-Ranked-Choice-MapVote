@@ -99,6 +99,7 @@ if CLIENT then
 
 		local votenum = 1
 		local votelist = {}
+		local voted = false
 
 		local chooseNum = { "First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth", "Ninth" }
 		local maplist = net.ReadString()
@@ -197,11 +198,27 @@ if CLIENT then
 		maps[index]:SetPos(20, mapVoteSize + 55)
 		maps[index]:SetIcon( "icon16/tick.png" )
 		maps[index].DoClick = function()
+			voted = true -- Don't want them voting twice
 			Frame:Close()
 			-- Send it back to the server
 			net.Start("RCMVsendvote")
 			net.WriteTable(votelist)
 			net.SendToServer()
+		end
+		
+		-- Rewrite DRame:OnClose() to submit empty vote on [x]
+		function Frame:OnClose()
+			if (voted == false) then
+				votelist = {} -- Clear anything they might have clicked
+				net.Start("RCMVsendvote")
+				net.WriteTable(votelist)
+				net.SendToServer()
+				dbg(PrintTable(votelist))
+				dbg("Sent empty vote")
+			else
+				dbg(PrintTable(votelist))
+				dbg("Sent actual vote")
+			end
 		end
 	end)
 
