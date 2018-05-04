@@ -9,7 +9,8 @@ if CLIENT then
 	-- Let's display a message
 	function rcmvMsg(a, time)
 		local msgFrame = vgui.Create("DNotify")
-		msgFrame:SetSize(300,60)
+		local width,height = surface.GetTextSize(a)
+		msgFrame:SetSize(width+20, height+20)
 		msgFrame:SetPos(ScrW() /2, ScrH() / 24) -- ScrH() /2 )
 		local bg = vgui.Create("DPanel", msgFrame)
 		bg:Dock( FILL )
@@ -20,11 +21,12 @@ if CLIENT then
 		
 
 		local DLabel = vgui.Create("DLabel", bg)
-		DLabel:SetPos(10,20)
+		DLabel:SetPos(width+10,height+10)
 		DLabel:SetSize(250,20)
 		DLabel:SetText(a)
 		DLabel:SetTextColor( Color( 255, 255, 255 ) )
 		DLabel:SetFont( "GModNotify" )
+		DLabel:Dock(FILL)
 
 		DLabel:SetContentAlignment(5)		
 
@@ -77,7 +79,7 @@ if CLIENT then
 			surface.PlaySound("buttons/button19.wav")
 			a = net.ReadString()
 			dbg(a)
-			rcmvMsg("Next Map: " .. a,10) 
+			rcmvMsg("Nexta Map: " .. a,10) 
 			rcmvmapwinnerfired = true
 		end
 	end )
