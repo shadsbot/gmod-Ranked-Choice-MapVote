@@ -21,8 +21,6 @@ if CLIENT then
 		
 
 		local DLabel = vgui.Create("DLabel", bg)
-		DLabel:SetPos(width+10,height+10)
-		DLabel:SetSize(250,20)
 		DLabel:SetText(a)
 		DLabel:SetTextColor( Color( 255, 255, 255 ) )
 		DLabel:SetFont( "GModNotify" )
@@ -79,7 +77,7 @@ if CLIENT then
 			surface.PlaySound("buttons/button19.wav")
 			a = net.ReadString()
 			dbg(a)
-			rcmvMsg("Nexta Map: " .. a,10) 
+			rcmvMsg("Next Map: " .. a,10) 
 			rcmvmapwinnerfired = true
 		end
 	end )
