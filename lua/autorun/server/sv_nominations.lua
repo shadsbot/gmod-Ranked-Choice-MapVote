@@ -41,9 +41,16 @@ function checkPlayerNomination(ply,text,team)
                 net.WriteTable(message)
                 net.Broadcast()
             else
-                timer.Create("invalidMapResponse", (1/30), 1, function()
-                    ply:PrintMessage(HUD_PRINTTALK, text .. " was either not found, or already nominated.")
-                end)
+                if not tableContains(usableMaps,text) then
+                    timer.Create("invalidMapResponse", (1/30), 1, function()
+                        ply:PrintMessage(HUD_PRINTTALK, text .. " is not a valid map.")
+                    end)
+                end
+                if tableContains(approvedNominations,text) then
+                    timer.Create("invalidMapResponse", (1/30), 1, function()
+                        ply:PrintMessage(HUD_PRINTTALK, text .. " was already nominated!")
+                    end)
+                end
             end
         else
             timer.Create("invalidMapResponse", (1/30), 1, function()
