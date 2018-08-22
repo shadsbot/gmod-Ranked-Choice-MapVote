@@ -133,6 +133,3 @@ function updateMaps()
         end
     end
 end
-
-print(getMapMinPlayers("ttt_terrortownexamplemap"))
-print(getMapMaxPlayers("ttt_terrortownexamplemap"))
