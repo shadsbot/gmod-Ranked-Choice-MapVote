@@ -23,4 +23,16 @@ You can configure the amount of time players have to vote by changing the  `rcmv
 
 Force the mapvote to start by running the concommand `rcmv_forcevoting`.
 
-Players can also nominate up to four maps of their choosing. The map must be in the whitelist if in whitelist mode, and not blacklisted if in blacklist mode. They can nominate by using the `!nominate <map>` chat command. 
+Players can also nominate up to four maps of their choosing by default. More can be allowed based on the `rcmv_nomination_limit` ConVar. The map must be in the whitelist if in whitelist mode, and not blacklisted if in blacklist mode. They can nominate by using the `!nominate <map>` chat command. 
+
+## ConVars and Config
+
+|ConVar|Default|Description|Notes|
+|------|-------|-----------|-----|
+|rcmv_whitelist|0|Decides if maplist.txt is used as a whitelist or a blacklist.|See above|
+|rcmv_votingduration|120||The amount of time that players have to submit their votes (in seconds).|
+|rcmv_debug|0|Enable debugging messages in console for RCMV. Recommended to keep disabled.|Hark, thy manifold is fraught with perils|
+|rcmv_nomination_limit|4|The maximum number of maps that can be nominated per round.|Shared among all players.|
+|rcmv_nomination_enabled|1|Allow players to nominate maps to play on.|If this is off then they can't use `!nominate`|
+|rcmv_mapcount|3|Number of maps to randomly select each time.|RCMV will randomly select this number of maps for players to vote for each round.|
+|rcmv_nominate_ignore_playerlimit|0|Determine if nominations ignore map:player ratio restrictions.|If off: nominations are rejected if not enough players present. If on: any map can be nominated regardless of how many players are on.|
