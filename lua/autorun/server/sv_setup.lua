@@ -4,9 +4,10 @@ RunConsoleCommand("mapcyclefile", "data/rcmapvote/nextmap.txt")
 CreateConVar("rcmv_whitelist", 0, { FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Decides if maplist.txt is used as a whitelist or a blacklist.")
 CreateConVar("rcmv_votingduration", "120", { FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }) -- Make the voting duration alterable.
 CreateConVar("rcmv_debug", 0, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Enable debugging messages in console for RCMV. Recommended to keep disabled.")
-CreateConVar("rcmv_maxnominations", 4, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "The maximum number of maps that can be nominated per round.")
-CreateConVar("rcmv_nominations", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Allow players to nominate maps to play on.")
-CreateConVar("rcmv_numberofrandommaps", 3, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Number of maps to randomly select each time.")
+CreateConVar("rcmv_nomination_limit", 4, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "The maximum number of maps that can be nominated per round.")
+CreateConVar("rcmv_nomination_enabled", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Allow players to nominate maps to play on.")
+CreateConVar("rcmv_mapcount", 3, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Number of maps to randomly select each time.")
+CreateConVar("rcmv_nominate_ignore_playerlimit", 0, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Determine if nominations ignore map:player ratio restrictions.")
 concommand.Add("rcmv_forcevoting", forceVoting)
 
 -- Check if anything exists, if not, create it

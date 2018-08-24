@@ -22,11 +22,11 @@ function isWhitelistMode()
 end
 
 function getMaxNominations()
-    return GetConVar("rcmv_maxnominations"):GetInt()
+    return GetConVar("rcmv_nomination_limit"):GetInt()
 end
 
 function getNumberRandomMaps()
-    return GetConVar("rcmv_numberofrandommaps"):GetInt()
+    return GetConVar("rcmv_mapcount"):GetInt()
 end
 
 function getVotingDuration()
@@ -34,7 +34,7 @@ function getVotingDuration()
 end
 
 function nominationsAllowed()
-    if(GetConVar("rcmv_nominations"):GetInt() == 1) then
+    if(GetConVar("rcmv_nomination_enabled"):GetInt() == 1) then
         return true
     end
     return false
@@ -53,7 +53,7 @@ function insertScannedMaps()
 end
 
 function isBlackListed(map, localMapList)
-    for blacklistedMap in localMapList:gmatch("%S+") do 
+    for _,blacklistedMap in ipairs(localMapList) do 
         if (map == blacklistedMap) then
             return true
         end
@@ -61,12 +61,73 @@ function isBlackListed(map, localMapList)
     end 
 end
 
+function getMapData()
+    local localMapList = file.Read("rcmapvote/maplist.txt")
+    local processed = {}
+    local namesOnly = {}
+    
+    -- Split by newline, make array by delimiter " "
+    for map in localMapList:gmatch("([^\n]*)\n?") do
+        if (string.len(map) > 0) then -- may be a newline at end of file
+            table.insert(processed, string.Explode(" ",map))
+        end
+    end
+    for _,map in ipairs(processed) do
+            table.insert(namesOnly, map[1])
+    end
+    return processed,namesOnly
+end
+
+function getMapMinPlayers(map)
+    for _,mapName in ipairs(mapData) do 
+        if (mapName[1] == map) then
+            return tonumber(mapName[2]) or 0
+        end
+    end
+    -- Map not found, tell the user and default to a safe number
+    ServerLog("RCMV:sv_universal.lua:getMapMaxPlayers(): Map " .. map .. " not found.")
+    return 0
+end
+function getMapMaxPlayers(map)
+    for _,mapName in ipairs(mapData) do 
+        if (mapName[1] == map) then
+            return tonumber(mapName[3]) or 999
+        end
+    end
+    ServerLog("RCMV:sv_universal.lua:getMapMaxPlayers(): Map " .. map .. " not found.")
+    return 999
+end
+
+function playerMapRatioEnabled()
+    if(GetConVar("rcmv_nominate_ignore_playerlimit"):GetInt() == 0) then
+        return true
+    end
+    return false
+end
+
+function determineMapRatioLegal(map)
+    if playerMapRatioEnabled() then 
+        if player.GetCount() >= getMapMinPlayers(map) then
+            if player.GetCount() <= getMapMaxPlayers(map) then
+                dbg("enough players " .. map .. player.GetCount() .. " " .. getMapMinPlayers(map) .. " " .. getMapMaxPlayers(map))
+                return true
+            end
+            dbg("too many players for map")
+            return false, "there are too many players for this map"
+        end
+        dbg("not enough players for map")
+        return false, "there are not enough players for this map"
+    end
+    return true
+end
+
 function updateMaps()
     dbg("updateMaps() has run")
     usableMaps = {} -- global, "update" is really a re-write from scratch
-    local localMapList = file.Read("rcmapvote/maplist.txt")
+    processed,localMapList = getMapData()
+    mapData = processed;
     if isWhitelistMode() then
-        for map in localMapList:gmatch("%S+") do 
+        for _,map in ipairs(localMapList) do 
             table.insert(usableMaps, map) 
         end
     else

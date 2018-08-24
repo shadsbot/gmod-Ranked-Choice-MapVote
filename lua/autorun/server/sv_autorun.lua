@@ -4,6 +4,7 @@ if SERVER then
     approvedNominations = {}
     usableMaps = {}
     installedMaps = {}
+    mapData = {}
     votedPlayers = {}
     mapchangeSent = false
     
