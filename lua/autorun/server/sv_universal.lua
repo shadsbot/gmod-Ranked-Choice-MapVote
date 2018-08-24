@@ -22,11 +22,11 @@ function isWhitelistMode()
 end
 
 function getMaxNominations()
-    return GetConVar("rcmv_maxnominations"):GetInt()
+    return GetConVar("rcmv_nomination_limit"):GetInt()
 end
 
 function getNumberRandomMaps()
-    return GetConVar("rcmv_numberofrandommaps"):GetInt()
+    return GetConVar("rcmv_mapcount"):GetInt()
 end
 
 function getVotingDuration()
@@ -34,7 +34,7 @@ function getVotingDuration()
 end
 
 function nominationsAllowed()
-    if(GetConVar("rcmv_nominations"):GetInt() == 1) then
+    if(GetConVar("rcmv_nomination_enabled"):GetInt() == 1) then
         return true
     end
     return false
