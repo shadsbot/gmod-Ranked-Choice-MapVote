@@ -81,11 +81,7 @@ end
 function getMapMinPlayers(map)
     for _,mapName in ipairs(mapData) do 
         if (mapName[1] == map) then
-            if not mapName[2] == nil and not mapName[2] == "" then
-                return mapName[2]
-            else
-                return 0
-            end
+            return tonumber(mapName[2]) or 0
         end
     end
     -- Map not found, tell the user and default to a safe number
@@ -95,15 +91,34 @@ end
 function getMapMaxPlayers(map)
     for _,mapName in ipairs(mapData) do 
         if (mapName[1] == map) then
-            if not mapName[3] == nil and not mapName[3] == "" then
-                return mapName[3]
-            else
-                return 999
-            end
+            return tonumber(mapName[3]) or 999
         end
     end
     ServerLog("RCMV:sv_universal.lua:getMapMaxPlayers(): Map " .. map .. " not found.")
     return 999
+end
+
+function playerMapRatioEnabled()
+    if(GetConVar("rcmv_nominationsignoreplayercount"):GetInt() == 0) then
+        return true
+    end
+    return false
+end
+
+function determineMapRatioLegal(map)
+    if playerMapRatioEnabled() then 
+        if player.GetCount() >= getMapMinPlayers(map) then
+            if player.GetCount() <= getMapMaxPlayers(map) then
+                dbg("enough players " .. map .. player.GetCount() .. " " .. getMapMinPlayers(map) .. " " .. getMapMaxPlayers(map))
+                return true
+            end
+            dbg("too many players for map")
+            return false, "there are too many players for this map"
+        end
+        dbg("not enough players for map")
+        return false, "there are not enough players for this map"
+    end
+    return true
 end
 
 function updateMaps()

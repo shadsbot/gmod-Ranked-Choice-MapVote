@@ -7,6 +7,7 @@ CreateConVar("rcmv_debug", 0, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Enabl
 CreateConVar("rcmv_maxnominations", 4, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "The maximum number of maps that can be nominated per round.")
 CreateConVar("rcmv_nominations", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Allow players to nominate maps to play on.")
 CreateConVar("rcmv_numberofrandommaps", 3, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Number of maps to randomly select each time.")
+CreateConVar("rcmv_nominationsignoreplayercount", 0, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Determine if nominations ignore map:player ratio restrictions.")
 concommand.Add("rcmv_forcevoting", forceVoting)
 
 -- Check if anything exists, if not, create it

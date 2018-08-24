@@ -26,7 +26,9 @@ function checkPlayerNomination(ply,text,team)
             if tableContains(usableMaps,map) then  
                 -- if map is not duplicate
                 if not tableContains(approvedNominations, map) then 
-                    return true
+                    if determineMapRatioLegal(map) then
+                        return true
+                    end
                 end
             end
             return false
@@ -49,6 +51,12 @@ function checkPlayerNomination(ply,text,team)
                 if tableContains(approvedNominations,text) then
                     timer.Create("invalidMapResponse", (1/30), 1, function()
                         ply:PrintMessage(HUD_PRINTTALK, text .. " was already nominated!")
+                    end)
+                end
+                local err,msg = determineMapRatioLegal(text)
+                if not err then 
+                    timer.Create("invalidMapResponse", (1/30), 1, function()
+                        ply:PrintMessage(HUD_PRINTTALK, text .. " was not nominated because " .. msg)
                     end)
                 end
             end
