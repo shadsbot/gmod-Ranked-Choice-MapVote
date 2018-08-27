@@ -53,12 +53,12 @@ function insertScannedMaps()
 end
 
 function isBlackListed(map, localMapList)
-    for _,blacklistedMap in ipairs(localMapList) do 
+    for _,blacklistedMap in ipairs(localMapList) do
         if (map == blacklistedMap) then
             return true
         end
-        return false   
     end 
+    return false   
 end
 
 function getMapData()
@@ -132,19 +132,10 @@ function updateMaps()
         end
     else
         insertScannedMaps()
-        local blacklistIndexes = {}
-        -- Iterate through the maps to see if any are blacklisted
-        for _,m in ipairs(installedMaps) do
-            if (isBlackListed(m, localMapList)) then
-                table.insert(blacklistIndexes, _)
-            end            
-        end
-        
-        -- Reverse blacklistIndexes because popping in sequential would
-        -- shift the indexes of the other maps
-        blacklistIndexes = table.Reverse(blacklistIndexes)
-        for _,i in ipairs(blacklistIndexes) do
-            table.remove(usableMaps,i)
+        for _,map in ipairs(installedMaps) do
+            if not isBlackListed(map, localMapList) then 
+                table.insert(usableMaps, map)
+            end
         end
     end
 end
