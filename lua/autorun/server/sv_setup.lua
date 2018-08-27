@@ -6,7 +6,7 @@ CreateConVar("rcmv_votingduration", "120", { FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXE
 CreateConVar("rcmv_debug", 0, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Enable debugging messages in console for RCMV. Recommended to keep disabled.")
 CreateConVar("rcmv_nomination_limit", 4, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "The maximum number of maps that can be nominated per round.")
 CreateConVar("rcmv_nomination_enabled", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Allow players to nominate maps to play on.")
-CreateConVar("rcmv_nomination_playerlimit", true, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Only allow maps to be nominated that there are enough players for.")
+CreateConVar("rcmv_nomination_playerlimit", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Only allow maps to be nominated that there are enough players for.")
 CreateConVar("rcmv_mapcount", 3, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Number of maps to randomly select each time.")
 concommand.Add("rcmv_forcevoting", forceVoting)
 

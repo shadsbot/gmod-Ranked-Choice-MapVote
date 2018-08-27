@@ -34,5 +34,5 @@ Players can also nominate up to four maps of their choosing by default. More can
 |rcmv_debug|0|Enable debugging messages in console for RCMV. Recommended to keep disabled.|Hark, thy manifold is fraught with perils|
 |rcmv_nomination_limit|4|The maximum number of maps that can be nominated per round.|Shared among all players.|
 |rcmv_nomination_enabled|1|Allow players to nominate maps to play on.|If this is off then they can't use `!nominate`|
-|rcmv_nomination_playerlimit|true|Only allow maps to be nominated that there are enough players for.|If true: nominations are rejected if not enough players present. If false: any map can be nominated regardless of how many players are on.|
+|rcmv_nomination_playerlimit|1|Only allow maps to be nominated that there are enough players for.|If 1: nominations are rejected if not enough players present. If 0: any map can be nominated regardless of how many players are on.|
 |rcmv_mapcount|3|Number of maps to randomly select each time.|RCMV will randomly select this number of maps for players to vote for each round.|
