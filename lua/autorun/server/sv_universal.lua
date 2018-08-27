@@ -99,10 +99,7 @@ function getMapMaxPlayers(map)
 end
 
 function playerMapRatioEnabled()
-    if(GetConVar("rcmv_nominate_ignore_playerlimit"):GetInt() == 0) then
-        return true
-    end
-    return false
+    return GetConVar("rcmv_nomination_playerlimit"):GetBool()
 end
 
 function determineMapRatioLegal(map)
