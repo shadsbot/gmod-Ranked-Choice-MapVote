@@ -45,18 +45,6 @@ function nominationsAllowed()
     return false
 end
 
-function insertScannedMaps()
-    installedMaps = file.Find("maps/ttt_*.bsp", "GAME")
-    -- Remove file extensions before final list is sent
-    for index,map in ipairs(installedMaps) do
-        installedMaps[index] = string.gsub(map,".bsp","")
-    end
-    
-    for index,map in ipairs(installedMaps) do 
-        table.insert(usableMaps,map) 
-    end
-end
-
 function isBlackListed(map, localMapList)
     for _,blacklistedMap in ipairs(localMapList) do
         if (map == blacklistedMap) then
@@ -64,6 +52,20 @@ function isBlackListed(map, localMapList)
         end
     end 
     return false   
+end
+
+function insertScannedMaps(localMapList)
+    installedMaps = file.Find("maps/ttt_*.bsp", "GAME")
+    -- Remove file extensions before final list is sent
+    for index,map in ipairs(installedMaps) do
+        installedMaps[index] = string.gsub(map,".bsp","")
+    end
+    
+    for index,map in ipairs(installedMaps) do 
+        if not isBlackListed(map,localMapList) then
+            table.insert(usableMaps,map)
+        end
+    end
 end
 
 function getMapData()
@@ -133,7 +135,7 @@ function updateMaps()
     if isWhitelistMode() then
         usableMaps = localMapList
     else
-        insertScannedMaps()
+        insertScannedMaps(localMapList)
         for _,map in ipairs(installedMaps) do
             if not isBlackListed(map, localMapList) then 
                 table.insert(usableMaps, map)
@@ -141,5 +143,3 @@ function updateMaps()
         end
     end
 end
-
-dbg(usableMaps)
