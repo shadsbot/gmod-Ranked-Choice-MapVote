@@ -1,13 +1,18 @@
 -- Allows debug messages to be toggled
 function dbg(msg)
     if(GetConVar("rcmv_debug"):GetInt() == 1) then
-        print(msg)
+        if(type(msg) == "string") then
+            print(msg)
+        end
+        if(type(msg) == "table") then
+            PrintTable(msg)
+        end
     end
 end
 
 function tableContains(table, value)
-    for i=1, #table do
-        if table[i] == value then
+    for _,map in ipairs(table) do 
+        if map == value then
             return true
         end
     end
@@ -73,6 +78,8 @@ function getMapData()
         end
     end
     for _,map in ipairs(processed) do
+            map[1] = string.gsub(map[1], "\r", "")
+            map[1] = string.gsub(map[1], "\n", "")
             table.insert(namesOnly, map[1])
     end
     return processed,namesOnly
@@ -127,9 +134,7 @@ function updateMaps()
     processed,localMapList = getMapData()
     mapData = processed;
     if isWhitelistMode() then
-        for _,map in ipairs(localMapList) do 
-            table.insert(usableMaps, map) 
-        end
+        usableMaps = localMapList
     else
         insertScannedMaps()
         for _,map in ipairs(installedMaps) do
@@ -139,3 +144,5 @@ function updateMaps()
         end
     end
 end
+
+dbg(usableMaps)

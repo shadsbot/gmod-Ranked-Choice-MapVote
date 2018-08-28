@@ -22,8 +22,11 @@ function checkPlayerNomination(ply,text,team)
         end
 
         local function mapIsValid(map)
+            dbg("checking validity of " .. map .. ".")
             -- if map is available
+            dbg(usableMaps)
             if tableContains(usableMaps,map) then  
+                dbg("checking validity")
                 -- if map is not duplicate
                 if not tableContains(approvedNominations, map) then 
                     if determineMapRatioLegal(map) then
