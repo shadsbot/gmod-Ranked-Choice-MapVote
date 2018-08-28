@@ -7,6 +7,13 @@ function dbg(msg)
         if(type(msg) == "table") then
             PrintTable(msg)
         end
+        if(type(msg) == "boolean") then
+            if(msg) then 
+                print("True")
+            else 
+                print("False")
+            end
+        end
     end
 end
 
@@ -20,10 +27,7 @@ function tableContains(table, value)
 end
 
 function isWhitelistMode()
-    if (GetConVar("rcmv_whitelist"):GetInt() == 1) then
-        return true
-    end
-    return false
+    return GetConVar("rcmv_whitelist"):GetBool()
 end
 
 function getMaxNominations()
@@ -39,10 +43,11 @@ function getVotingDuration()
 end
 
 function nominationsAllowed()
-    if(GetConVar("rcmv_nomination_enabled"):GetInt() == 1) then
-        return true
-    end
-    return false
+    return GetConVar("rcmv_nomination_enabled"):GetBool()
+end
+
+function playerMapRatioEnabled()
+    return GetConVar("rcmv_nomination_playerlimit"):GetBool()
 end
 
 function isBlackListed(map, localMapList)
@@ -105,10 +110,6 @@ function getMapMaxPlayers(map)
     end
     ServerLog("RCMV:sv_universal.lua:getMapMaxPlayers(): Map " .. map .. " not found.")
     return 999
-end
-
-function playerMapRatioEnabled()
-    return GetConVar("rcmv_nomination_playerlimit"):GetBool()
 end
 
 function determineMapRatioLegal(map)
