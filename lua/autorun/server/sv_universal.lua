@@ -114,16 +114,19 @@ end
 
 function determineMapRatioLegal(map)
     if playerMapRatioEnabled() then 
-        if player.GetCount() >= getMapMinPlayers(map) then
-            if player.GetCount() <= getMapMaxPlayers(map) then
-                dbg("enough players " .. map .. player.GetCount() .. " " .. getMapMinPlayers(map) .. " " .. getMapMaxPlayers(map))
+        local mapMinPlayers = getMapMinPlayers(map)
+        local mapMaxPlayers = getMapMaxPlayers(map)
+        local playerCount = player.GetCount()
+        if playerCount >= mapMinPlayers then
+            if playerCount <= mapMaxPlayers then
+                dbg("enough players " .. map .. playerCount .. " " .. mapMinPlayers .. " " .. mapMaxPlayers)
                 return true
             end
             dbg("too many players for map")
-            return false, "there are too many players for this map"
+            return false, "player count not within limits " .. playerCount .. ": (↓" .. mapMinPlayers .. "↓ | ↑" .. mapMaxPlayers .. "↑)"
         end
         dbg("not enough players for map")
-        return false, "there are not enough players for this map"
+        return false, "player count not within limits " .. playerCount .. ": (↓" .. mapMinPlayers .. "↓ | ↑" .. mapMaxPlayers .. "↑)"
     end
     return true
 end
