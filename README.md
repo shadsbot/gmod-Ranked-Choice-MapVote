@@ -12,10 +12,10 @@ For more information about Ranked Choice voting systems and how they work, [chec
 
 RCMV will use a file, `maplist.txt`, located in `garrysmod/data/rcmapvote`, as a blacklist. It can be changed to act as a whitelist depending on the value of the `rcmv_whitelist` convar.
 
-|rcmv_whitelist|maplist.txt|
-|---|---|
-|0|blacklist|
-|1|whitelist|
+|rcmv_whitelist|maplist.txt|function|
+|---|---|---|
+|0|blacklist|exclude maps in maplist.txt|
+|1|whitelist|only use what's in maplist.txt|
 
 When acting as a whitelist, it will only draw from the maps in `maplist.txt`, while acting as a blacklist it will scan the `maps` folder for any `.bsp` that contains the `ttt_` prefix, and exclude the maps in `maplist.txt`. Each map should be on its own line, and without the `.bsp` extension.
 
