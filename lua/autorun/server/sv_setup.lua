@@ -6,9 +6,18 @@ CreateConVar("rcmv_votingduration", "120", { FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXE
 CreateConVar("rcmv_debug", 0, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Enable debugging messages in console for RCMV. Recommended to keep disabled.")
 CreateConVar("rcmv_nomination_limit", 4, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "The maximum number of maps that can be nominated per round.")
 CreateConVar("rcmv_nomination_enabled", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Allow players to nominate maps to play on.")
-CreateConVar("rcmv_nomination_playerlimit", 1, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Only allow maps to be nominated that there are enough players for.")
+-- CreateConVar("rcmv_nomination_playerlimit", "UNSET", {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Legacy convar replaced by rcmv_playerlimits")
+CreateConVar("rcmv_playerlimits", 1, {FCVAR_ARCHIVE, FCVAR_ARCHIVE}, "Only allow maps that there are enough players for.")
 CreateConVar("rcmv_mapcount", 3, {FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE }, "Number of maps to randomly select each time.")
 concommand.Add("rcmv_forcevoting", forceVoting)
+
+-- Convert old convars to new ones
+if ConVarExists("rcmv_nomination_playerlimit") then
+    if not (GetConVar("rcmv_nomination_playerlimit"):GetString() == "UNSET") then
+        GetConVar("rcmv_playerlimits"):SetBool(GetConVar("rcmv_nomination_playerlimit"):GetBool())
+        GetConVar("rcmv_nomination_playerlimit"):SetString("UNSET")
+    end
+end
 
 -- Check if anything exists, if not, create it
 if not file.Exists("rcmapvote","data") then

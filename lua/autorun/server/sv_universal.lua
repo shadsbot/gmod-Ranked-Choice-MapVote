@@ -47,7 +47,7 @@ function nominationsAllowed()
 end
 
 function playerMapRatioEnabled()
-    return GetConVar("rcmv_nomination_playerlimit"):GetBool()
+    return GetConVar("rcmv_playerlimits"):GetBool()
 end
 
 function isBlackListed(map, localMapList)
