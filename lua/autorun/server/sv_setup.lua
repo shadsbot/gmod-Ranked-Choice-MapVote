@@ -97,6 +97,9 @@ end)
 -- Checking to see if they say !nominate mapname
 hook.Add("PlayerSay", "RCMVPlayerSayNominate", function (ply, text, team)
     checkPlayerNomination(ply,text,team)
+    if (string.sub(text, 0, 9) == "!nominate") then
+        return "" 
+    end
 end)
 
 dbg("Updating maps and broadcasting")
