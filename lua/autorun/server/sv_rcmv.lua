@@ -45,10 +45,26 @@ function startVoting()
 
     -- Add random map that's not a nomination
     local finalMaplist = {}
+    local noRandomMapsAdded = true
     for _,map in ipairs(shuffledMaps) do
         if(#finalMaplist < getNumberRandomMaps()) then
             if not tableContains(approvedNominations, map) then
-                table.insert(finalMaplist, map)
+                if determineMapRatioLegal(map) then
+                    table.insert(finalMaplist, map)
+                    noRandomMapsAdded = false
+                end
+            end
+        end
+    end
+
+    -- If we were supposed to add random maps but could not, tell the systemlog and throw in some randoms
+    if noRandomMapsAdded and getNumberRandomMaps() > 0 then
+        ServerLog("RCMV Warning: Could not find any maps suitable for " .. player.GetCount() .. " players. Random maps will be supplied in their place.\n")
+        for _,map in ipairs(shuffledMaps) do
+            if(#finalMaplist < getNumberRandomMaps()) then
+                if not tableContains(approvedNominations, map) then
+                    table.insert(finalMaplist, map)
+                end
             end
         end
     end
@@ -57,7 +73,7 @@ function startVoting()
     table.Add(finalMaplist, approvedNominations)
 
     -- Send to all players
-    ServerLog("Map voting has started with the following maps: " .. table.ToString(finalMaplist))
+    ServerLog("Map voting has started with the following maps: " .. table.ToString(finalMaplist) .. "\n")
     net.Start("RCMVmaplist")
     net.WriteTable(finalMaplist)
     net.Broadcast()

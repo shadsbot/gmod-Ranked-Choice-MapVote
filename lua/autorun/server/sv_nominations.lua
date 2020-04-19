@@ -8,6 +8,7 @@ function checkPlayerNomination(ply,text,team)
                 ply:PrintMessage(HUD_PRINTTALK, "!nominate <map> : Adds a map to the mapvote queue")
             end )
         end
+        -- The command "!nominate list" was invoked
         if (text == "list") then
             timer.Create("respondNominateChatList", (1/30), 1, function()
                 if (#approvedNominations > 0) then
@@ -19,11 +20,15 @@ function checkPlayerNomination(ply,text,team)
                     ply:PrintMessage(HUD_PRINTTALK, "No maps have been nominated yet! Why not add one?")
                 end
             end )
+            return
         end
 
         local function mapIsValid(map)
+            dbg("checking validity of " .. map .. ".")
             -- if map is available
+            dbg(usableMaps)
             if tableContains(usableMaps,map) then  
+                dbg("checking validity")
                 -- if map is not duplicate
                 if not tableContains(approvedNominations, map) then 
                     if determineMapRatioLegal(map) then

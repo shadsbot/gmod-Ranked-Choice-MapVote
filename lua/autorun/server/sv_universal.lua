@@ -1,13 +1,25 @@
 -- Allows debug messages to be toggled
 function dbg(msg)
     if(GetConVar("rcmv_debug"):GetInt() == 1) then
-        print(msg)
+        if(type(msg) == "string") then
+            print(msg)
+        end
+        if(type(msg) == "table") then
+            PrintTable(msg)
+        end
+        if(type(msg) == "boolean") then
+            if(msg) then 
+                print("True")
+            else 
+                print("False")
+            end
+        end
     end
 end
 
 function tableContains(table, value)
-    for i=1, #table do
-        if table[i] == value then
+    for _,map in ipairs(table) do 
+        if map == value then
             return true
         end
     end
@@ -15,10 +27,7 @@ function tableContains(table, value)
 end
 
 function isWhitelistMode()
-    if (GetConVar("rcmv_whitelist"):GetInt() == 1) then
-        return true
-    end
-    return false
+    return GetConVar("rcmv_whitelist"):GetBool()
 end
 
 function getMaxNominations()
@@ -34,13 +43,23 @@ function getVotingDuration()
 end
 
 function nominationsAllowed()
-    if(GetConVar("rcmv_nomination_enabled"):GetInt() == 1) then
-        return true
-    end
-    return false
+    return GetConVar("rcmv_nomination_enabled"):GetBool()
 end
 
-function insertScannedMaps()
+function playerMapRatioEnabled()
+    return GetConVar("rcmv_playerlimits"):GetBool()
+end
+
+function isBlackListed(map, localMapList)
+    for _,blacklistedMap in ipairs(localMapList) do
+        if (map == blacklistedMap) then
+            return true
+        end
+    end 
+    return false   
+end
+
+function insertScannedMaps(localMapList)
     installedMaps = file.Find("maps/ttt_*.bsp", "GAME")
     -- Remove file extensions before final list is sent
     for index,map in ipairs(installedMaps) do
@@ -48,17 +67,10 @@ function insertScannedMaps()
     end
     
     for index,map in ipairs(installedMaps) do 
-        table.insert(usableMaps,map) 
-    end
-end
-
-function isBlackListed(map, localMapList)
-    for _,blacklistedMap in ipairs(localMapList) do 
-        if (map == blacklistedMap) then
-            return true
+        if not isBlackListed(map,localMapList) then
+            table.insert(usableMaps,map)
         end
-        return false   
-    end 
+    end
 end
 
 function getMapData()
@@ -73,6 +85,8 @@ function getMapData()
         end
     end
     for _,map in ipairs(processed) do
+            map[1] = string.gsub(map[1], "\r", "")
+            map[1] = string.gsub(map[1], "\n", "")
             table.insert(namesOnly, map[1])
     end
     return processed,namesOnly
@@ -98,22 +112,21 @@ function getMapMaxPlayers(map)
     return 999
 end
 
-function playerMapRatioEnabled()
-    return GetConVar("rcmv_nomination_playerlimit"):GetBool()
-end
-
 function determineMapRatioLegal(map)
     if playerMapRatioEnabled() then 
-        if player.GetCount() >= getMapMinPlayers(map) then
-            if player.GetCount() <= getMapMaxPlayers(map) then
-                dbg("enough players " .. map .. player.GetCount() .. " " .. getMapMinPlayers(map) .. " " .. getMapMaxPlayers(map))
+        local mapMinPlayers = getMapMinPlayers(map)
+        local mapMaxPlayers = getMapMaxPlayers(map)
+        local playerCount = player.GetCount()
+        if playerCount >= mapMinPlayers then
+            if playerCount <= mapMaxPlayers then
+                dbg("enough players " .. map .. " " .. playerCount .. " " .. mapMinPlayers .. " " .. mapMaxPlayers)
                 return true
             end
-            dbg("too many players for map")
-            return false, "there are too many players for this map"
+            dbg("too many players for map " .. map)
+            return false, "player count not within limits " .. playerCount .. ": (↓" .. mapMinPlayers .. "↓ | ↑" .. mapMaxPlayers .. "↑)"
         end
-        dbg("not enough players for map")
-        return false, "there are not enough players for this map"
+        dbg("not enough players for map " .. map)
+        return false, "player count not within limits " .. playerCount .. ": (↓" .. mapMinPlayers .. "↓ | ↑" .. mapMaxPlayers .. "↑)"
     end
     return true
 end
@@ -124,24 +137,13 @@ function updateMaps()
     processed,localMapList = getMapData()
     mapData = processed;
     if isWhitelistMode() then
-        for _,map in ipairs(localMapList) do 
-            table.insert(usableMaps, map) 
-        end
+        usableMaps = localMapList
     else
-        insertScannedMaps()
-        local blacklistIndexes = {}
-        -- Iterate through the maps to see if any are blacklisted
-        for _,m in ipairs(installedMaps) do
-            if (isBlackListed(m, localMapList)) then
-                table.insert(blacklistIndexes, _)
-            end            
-        end
-        
-        -- Reverse blacklistIndexes because popping in sequential would
-        -- shift the indexes of the other maps
-        blacklistIndexes = table.Reverse(blacklistIndexes)
-        for _,i in ipairs(blacklistIndexes) do
-            table.remove(usableMaps,i)
+        insertScannedMaps(localMapList)
+        for _,map in ipairs(installedMaps) do
+            if not isBlackListed(map, localMapList) then 
+                table.insert(usableMaps, map)
+            end
         end
     end
 end
